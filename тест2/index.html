@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Moon Ritual — Live in Moscow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nosifer&family=Montserrat:wght@300;400;500;600;700;900&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #050508;
+            --bg-dark: #0a0a0f;
+            --bg-card: #111118;
+            --bg-modal: #0d0d14;
+            --neon: #ff2e88;
+            --neon-glow: #ff6bb5;
+            --neon-dim: #8b1a4a;
+            --vip-gold: #ffb347;
+            --vip-glow: #ffd080;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --text-muted: #666;
+            --seat-available: #ff2e88;
+            --seat-occupied: #3a3a3f;
+            --seat-selected: #ff6bb5;
+            --seat-vip: #ffb347;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --font-gothic: 'Nosifer', cursive;
+            --font-display: 'UnifrakturMaguntia', cursive;
+            --font-body: 'Montserrat', sans-serif;
+            --z-canvas: 1;
+            --z-content: 10;
+            --z-header: 100;
+            --z-modal: 1000;
+            --z-overlay: 9999;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-dim) var(--bg-deep);
+            font-size: 16px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-deep);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-dim);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon);
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .grain-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: var(--z-overlay);
+            opacity: 0.045;
+            mix-blend-mode: overlay;
+        }
+        .grain-overlay::after {
+            content: '';
+            position: absolute;
+            inset: -200%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+            background-size: 256px 256px;
+            animation: grainShift 0.5s steps(3) infinite;
+        }
+        @keyframes grainShift {
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+            33% {
+                transform: translate(-1px, 1px);
+            }
+            66% {
+                transform: translate(1px, -1px);
+            }
+        }
+
+        .vignette-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: calc(var(--z-overlay) - 1);
+            background: radial-gradient(ellipse at center, transparent 55%, rgba(5, 5, 8, 0.7) 85%, rgba(5, 5, 8, 0.95) 100%);
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: var(--z-header);
+            padding: 1.2rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all var(--transition-smooth);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            background: transparent;
+        }
+        .header.scrolled {
+            padding: 0.7rem 2rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(10, 10, 15, 0.75);
+            border-bottom: 1px solid rgba(255, 46, 136, 0.12);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        .header__logo {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            color: var(--neon);
+            text-shadow: 0 0 20px var(--neon-glow), 0 0 60px var(--neon-dim);
+            letter-spacing: 0.05em;
+            user-select: none;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            line-height: 1;
+        }
+        .header__logo:hover {
+            text-shadow: 0 0 30px var(--neon-glow), 0 0 80px var(--neon), 0 0 120px var(--neon-dim);
+        }
+        .header__nav {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+        .header__nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: all var(--transition-fast);
+            position: relative;
+            padding: 0.3rem 0;
+        }
+        .header__nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1.5px;
+            background: var(--neon);
+            box-shadow: 0 0 8px var(--neon);
+            transition: width var(--transition-smooth);
+        }
+        .header__nav a:hover {
+            color: #fff;
+        }
+        .header__nav a:hover::after {
+            width: 100%;
+        }
+        .header__socials {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .header__socials a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            transition: all var(--transition-fast);
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+        }
+        .header__socials a:hover {
+            color: var(--neon);
+            border-color: rgba(255, 46, 136, 0.4);
+            text-shadow: 0 0 12px var(--neon-glow);
+            box-shadow: 0 0 20px rgba(255, 46, 136, 0.15);
+        }
+        .header__burger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 8px;
+            z-index: calc(var(--z-header) + 1);
+            background: none;
+            border: none;
+        }
+        .header__burger span {
+            display: block;
+            width: 26px;
+            height: 2px;
+            background: var(--neon);
+            border-radius: 2px;
+            transition: all var(--transition-fast);
+            box-shadow: 0 0 6px var(--neon-glow);
+        }
+        .header__burger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        .header__burger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .header__burger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 6rem 2rem 4rem;
+        }
+        .hero__canvas {
+            position: absolute;
+            inset: 0;
+            z-index: var(--z-canvas);
+            pointer-events: none;
+        }
+        .hero__content {
+            position: relative;
+            z-index: var(--z-content);
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+        }
+        .hero__title {
+            font-family: var(--font-gothic);
+            font-size: clamp(3rem, 8vw, 7rem);
+            color: #fff;
+            line-height: 1.1;
+            text-shadow:
+                0 0 20px var(--neon-glow),
+                0 0 60px var(--neon),
+                0 0 120px var(--neon-dim),
+                0 0 200px rgba(255, 46, 136, 0.5),
+                0 4px 8px rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.03em;
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+        @keyframes titlePulse {
+            0%,
+            100% {
+                text-shadow: 0 0 20px var(--neon-glow), 0 0 60px var(--neon), 0 0 120px var(--neon-dim), 0 0 200px rgba(255, 46, 136, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 35px var(--neon-glow), 0 0 90px var(--neon), 0 0 160px var(--neon-dim), 0 0 250px rgba(255, 46, 136, 0.7);
+            }
+        }
+        .hero__subtitle {
+            font-family: var(--font-body);
+            font-size: clamp(1rem, 2.5vw, 1.6rem);
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            text-shadow: 0 0 30px rgba(255, 46, 136, 0.4);
+        }
+        .hero__date {
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            color: var(--neon-glow);
+            margin-top: 2rem;
+            text-shadow: 0 0 20px var(--neon-dim);
+        }
+        .hero__cta {
+            display: inline-block;
+            margin-top: 2.5rem;
+            padding: 1rem 3rem;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #fff;
+            background: transparent;
+            border: 2px solid var(--neon);
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all var(--transition-bounce);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .hero__cta::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--neon), var(--neon-dim));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity var(--transition-smooth);
+            border-radius: var(--radius-xl);
+        }
+        .hero__cta:hover {
+            border-color: transparent;
+            box-shadow: 0 0 40px rgba(255, 46, 136, 0.6), 0 0 80px rgba(255, 46, 136, 0.3), 0 8px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-3px);
+            color: #fff;
+        }
+        .hero__cta:hover::before {
+            opacity: 1;
+        }
+        .hero__scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: var(--z-content);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            animation: floatDown 2s ease-in-out infinite;
+            cursor: pointer;
+        }
+        .hero__scroll-indicator span {
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .hero__scroll-indicator .arrow {
+            width: 20px;
+            height: 20px;
+            border-right: 2px solid var(--neon-dim);
+            border-bottom: 2px solid var(--neon-dim);
+            transform: rotate(45deg);
+            box-shadow: 0 0 8px var(--neon-dim);
+        }
+        @keyframes floatDown {
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(12px);
+            }
+        }
+
+        .section {
+            padding: 6rem 2rem;
+            position: relative;
+            z-index: var(--z-content);
+        }
+        .section__title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            text-align: center;
+            color: #fff;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px var(--neon-dim);
+        }
+        .section__subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 4rem;
+        }
+        .section--dark {
+            background: var(--bg-dark);
+        }
+
+        .about-content {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+        .about-content p {
+            margin-bottom: 1.5rem;
+        }
+        .about-content strong {
+            color: #fff;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+            perspective: 1200px;
+        }
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 46, 136, 0.12);
+            transition: all var(--transition-smooth);
+            position: relative;
+            transform-style: preserve-3d;
+            will-change: transform;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: var(--radius-lg);
+            padding: 1px;
+            background: linear-gradient(135deg, transparent 30%, rgba(255, 46, 136, 0.3) 50%, transparent 70%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity var(--transition-smooth);
+            pointer-events: none;
+        }
+        .card:hover {
+            border-color: rgba(255, 46, 136, 0.4);
+            box-shadow: 0 0 40px rgba(255, 46, 136, 0.2), 0 20px 50px rgba(0, 0, 0, 0.6);
+            transform: translateY(-8px);
+        }
+        .card:hover::before {
+            opacity: 1;
+        }
+        .card__icon {
+            font-size: 3rem;
+            margin-bottom: 1.2rem;
+            display: block;
+            filter: drop-shadow(0 0 15px var(--neon-dim));
+            transition: all var(--transition-smooth);
+        }
+        .card:hover .card__icon {
+            filter: drop-shadow(0 0 25px var(--neon-glow));
+            transform: scale(1.1);
+        }
+        .card__title {
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.08em;
+            color: #fff;
+            margin-bottom: 0.6rem;
+            text-transform: uppercase;
+        }
+        .card__desc {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .tickets-section {
+            text-align: center;
+        }
+        .tickets-info {
+            max-width: 500px;
+            margin: 0 auto 3rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            border: 1px solid rgba(255, 46, 136, 0.2);
+            box-shadow: 0 0 30px rgba(255, 46, 136, 0.08);
+        }
+        .tickets-info__price {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            color: var(--neon);
+            text-shadow: 0 0 30px var(--neon-glow);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .tickets-info__label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .tickets-info__note {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            line-height: 1.5;
+        }
+        .btn--buy {
+            display: inline-block;
+            padding: 1.1rem 3.5rem;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #fff;
+            background: linear-gradient(135deg, var(--neon), #c02060);
+            border: none;
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all var(--transition-bounce);
+            box-shadow: 0 0 35px rgba(255, 46, 136, 0.4), 0 8px 25px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn--buy:hover {
+            box-shadow: 0 0 60px rgba(255, 46, 136, 0.7), 0 0 100px rgba(255, 46, 136, 0.3), 0 12px 35px rgba(0, 0, 0, 0.6);
+            transform: translateY(-4px);
+        }
+        .btn--buy:active {
+            transform: translateY(-1px);
+            box-shadow: 0 0 25px rgba(255, 46, 136, 0.5), 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 4rem 2rem;
+            border-top: 1px solid rgba(255, 46, 136, 0.1);
+            position: relative;
+            z-index: var(--z-content);
+        }
+        .footer__text {
+            font-family: var(--font-gothic);
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            color: var(--neon-dim);
+            text-shadow: 0 0 40px rgba(255, 46, 136, 0.3);
+            letter-spacing: 0.05em;
+            animation: footerGlow 4s ease-in-out infinite;
+        }
+        @keyframes footerGlow {
+            0%,
+            100% {
+                text-shadow: 0 0 40px rgba(255, 46, 136, 0.3);
+                color: var(--neon-dim);
+            }
+            50% {
+                text-shadow: 0 0 70px rgba(255, 46, 136, 0.6);
+                color: var(--neon-glow);
+            }
+        }
+        .footer__copy {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            margin-top: 1rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: var(--z-modal);
+            background: rgba(5, 5, 8, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-smooth);
+            padding: 1rem;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal {
+            background: var(--bg-modal);
+            border-radius: var(--radius-xl);
+            padding: 2.5rem 2rem;
+            max-width: 850px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 46, 136, 0.25);
+            box-shadow: 0 0 80px rgba(255, 46, 136, 0.2), 0 30px 60px rgba(0, 0, 0, 0.7);
+            transform: translateY(30px) scale(0.96);
+            transition: transform var(--transition-bounce);
+            position: relative;
+        }
+        .modal-overlay.active .modal {
+            transform: translateY(0) scale(1);
+        }
+        .modal__close {
+            position: absolute;
+            top: 1rem;
+            right: 1.2rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+        .modal__close:hover {
+            color: var(--neon);
+            text-shadow: 0 0 20px var(--neon-glow);
+            background: rgba(255, 46, 136, 0.1);
+        }
+        .modal__title {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            text-align: center;
+            color: #fff;
+            margin-bottom: 0.3rem;
+            text-shadow: 0 0 25px var(--neon-dim);
+        }
+        .modal__subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+        .modal__stage {
+            text-align: center;
+            padding: 0.8rem;
+            margin: 0 auto 2rem;
+            max-width: 60%;
+            background: rgba(255, 46, 136, 0.08);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 46, 136, 0.2);
+            color: var(--neon-glow);
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            position: relative;
+        }
+        .modal__stage::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 14px solid rgba(255, 46, 136, 0.2);
+        }
+        .modal__legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        .modal__legend span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+        }
+        .modal__legend .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .dot--available {
+            background: var(--seat-available);
+            box-shadow: 0 0 10px var(--neon-glow);
+        }
+        .dot--occupied {
+            background: var(--seat-occupied);
+        }
+        .dot--vip {
+            background: var(--seat-vip);
+            box-shadow: 0 0 10px var(--vip-glow);
+        }
+        .dot--selected {
+            background: #fff;
+            box-shadow: 0 0 16px #fff, 0 0 30px var(--neon-glow);
+            border: 2px solid var(--neon);
+        }
+
+        .seat-grid-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding: 1rem 0;
+            -webkit-overflow-scrolling: touch;
+        }
+        .seat-row {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .seat-row__label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            width: 30px;
+            text-align: right;
+            padding-right: 0.5rem;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+        }
+        .seat {
+            width: 32px;
+            height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+            flex-shrink: 0;
+            border: 1px solid transparent;
+            font-size: 0.55rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .seat--available {
+            background: var(--seat-available);
+            box-shadow: 0 0 8px rgba(255, 46, 136, 0.4);
+            border-color: rgba(255, 46, 136, 0.5);
+        }
+        .seat--available:hover {
+            box-shadow: 0 0 20px var(--neon-glow), 0 0 40px rgba(255, 46, 136, 0.5);
+            transform: scale(1.2);
+            z-index: 5;
+            border-color: var(--neon-glow);
+        }
+        .seat--occupied {
+            background: var(--seat-occupied);
+            cursor: not-allowed;
+            border-color: rgba(58, 58, 63, 0.6);
+            opacity: 0.6;
+        }
+        .seat--vip {
+            background: linear-gradient(135deg, var(--vip-gold), #e89530);
+            box-shadow: 0 0 12px rgba(255, 179, 71, 0.5);
+            border-color: rgba(255, 179, 71, 0.6);
+            width: 36px;
+            height: 32px;
+            border-radius: 6px;
+        }
+        .seat--vip:hover {
+            box-shadow: 0 0 25px var(--vip-glow), 0 0 45px rgba(255, 179, 71, 0.6);
+            transform: scale(1.2);
+            z-index: 5;
+            border-color: var(--vip-glow);
+        }
+        .seat--selected {
+            background: #fff !important;
+            box-shadow: 0 0 20px #fff, 0 0 40px var(--neon-glow), 0 0 60px rgba(255, 46, 136, 0.6) !important;
+            border-color: #fff !important;
+            transform: scale(1.15);
+            z-index: 4;
+            color: var(--bg-deep);
+            font-weight: 700;
+        }
+        .seat--selected:hover {
+            transform: scale(1.25);
+        }
+        .seat__tooltip {
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: var(--radius-sm);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+            border: 1px solid rgba(255, 46, 136, 0.3);
+            letter-spacing: 0.03em;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        }
+        .seat:hover .seat__tooltip {
+            opacity: 1;
+        }
+        .seat--occupied .seat__tooltip {
+            display: none;
+        }
+
+        .modal__summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(255, 46, 136, 0.05);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 46, 136, 0.15);
+        }
+        .modal__selected-info {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .modal__selected-info strong {
+            color: #fff;
+            font-size: 1rem;
+        }
+        .modal__total {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            color: var(--neon);
+            text-shadow: 0 0 25px var(--neon-glow);
+            text-align: right;
+            line-height: 1;
+        }
+        .modal__total small {
+            display: block;
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            text-shadow: none;
+        }
+        .btn--confirm {
+            display: block;
+            width: 100%;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #fff;
+            background: linear-gradient(135deg, var(--neon), #c02060);
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-bounce);
+            box-shadow: 0 0 30px rgba(255, 46, 136, 0.35);
+        }
+        .btn--confirm:hover {
+            box-shadow: 0 0 50px rgba(255, 46, 136, 0.6);
+            transform: translateY(-2px);
+        }
+        .btn--confirm:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .fade-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .fade-up-delay-1 { transition-delay: 0.1s; }
+        .fade-up-delay-2 { transition-delay: 0.2s; }
+        .fade-up-delay-3 { transition-delay: 0.3s; }
+        .fade-up-delay-4 { transition-delay: 0.4s; }
+
+        @media (max-width: 1024px) {
+            .header__nav { gap: 1.2rem; }
+            .header__nav a { font-size: 0.75rem; }
+            .header__socials a { font-size: 0.7rem; padding: 0.3rem 0.6rem; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+            .seat { width: 26px; height: 24px; }
+            .seat--vip { width: 30px; height: 26px; }
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 1rem 1.2rem; }
+            .header.scrolled { padding: 0.6rem 1.2rem; }
+            .header__nav {
+                position: fixed; top: 0; right: -100%; width: 70%; max-width: 320px;
+                height: 100vh; flex-direction: column; background: rgba(10,10,15,0.95);
+                backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+                padding: 6rem 2rem 2rem; gap: 2rem; transition: right var(--transition-smooth);
+                border-left: 1px solid rgba(255,46,136,0.2); z-index: var(--z-header);
+            }
+            .header__nav.active { right: 0; }
+            .header__socials { display: none; }
+            .header__burger { display: flex; }
+            .cards-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+            .seat-grid-container { justify-content: flex-start; padding: 1rem 0.5rem; }
+            .seat { width: 22px; height: 20px; }
+            .seat--vip { width: 26px; height: 22px; }
+            .modal { padding: 1.5rem 0.8rem; border-radius: var(--radius-lg); max-height: 95vh; }
+        }
+
+        @media (max-width: 480px) {
+            .hero__title { font-size: 2.5rem; }
+            .hero__cta { padding: 0.8rem 2rem; font-size: 0.85rem; }
+            .btn--buy { padding: 0.9rem 2.5rem; font-size: 0.85rem; }
+            .seat { width: 18px; height: 17px; }
+            .seat--vip { width: 22px; height: 19px; }
+            .section__title { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain-overlay" aria-hidden="true"></div>
+    <div class="vignette-overlay" aria-hidden="true"></div>
+
+    <header class="header" id="header">
+        <a href="#" class="header__logo" aria-label="Dark Moon Ritual">DMR</a>
+        <nav>
+            <ul class="header__nav" id="headerNav">
+                <li><a href="#about">О концерте</a></li>
+                <li><a href="#format">Формат</a></li>
+                <li><a href="#tickets">Билеты</a></li>
+            </ul>
+        </nav>
+        <div class="header__socials">
+            <a href="#" aria-label="VK">VK</a>
+            <a href="#" aria-label="Telegram">TG</a>
+            <a href="#" aria-label="YouTube">YT</a>
+        </div>
+        <button class="header__burger" id="headerBurger" aria-label="Меню">
+            <span></span><span></span><span></span>
+        </button>
+    </header>
+
+    <section class="hero" id="hero">
+        <canvas class="hero__canvas" id="threeCanvas" aria-hidden="true"></canvas>
+        <div class="hero__content">
+            <h1 class="hero__title">Dark Moon<br>Ritual</h1>
+            <p class="hero__subtitle">Live in Moscow</p>
+            <p class="hero__date">31 октября / 20:00 / ДС «Мегаспорт»</p>
+            <a href="#tickets" class="hero__cta">Купить билет</a>
+        </div>
+        <div class="hero__scroll-indicator" id="scrollIndicator" aria-hidden="true">
+            <span>Скролл</span>
+            <div class="arrow"></div>
+        </div>
+    </section>
+
+    <section class="section section--dark" id="about">
+        <h2 class="section__title fade-up">О концерте</h2>
+        <div class="about-content fade-up fade-up-delay-1">
+            <p>Dark Moon Ritual — это не просто концерт, а полное погружение в тёмную эстетику и мощный звук. Единственное выступление в Москве объединит весь материал группы в уникальном сценическом оформлении.</p>
+            <p>Два с половиной часа живого звука, эксклюзивный сет-лист, готическая сценография и особая атмосфера для посвящённых.</p>
+            <p><strong>Дата:</strong> 31 октября, 20:00<br><strong>Место:</strong> ДС «Мегаспорт», Москва</p>
+        </div>
+    </section>
+
+    <section class="section" id="format">
+        <h2 class="section__title fade-up">Формат мероприятия</h2>
+        <p class="section__subtitle fade-up fade-up-delay-1">Погружение в тёмную эстетику</p>
+        <div class="cards-grid">
+            <div class="card fade-up fade-up-delay-1" data-tilt>
+                <span class="card__icon">🎸</span>
+                <h3 class="card__title">Живой звук</h3>
+                <p class="card__desc">Мощный живой звук на аналоговом оборудовании. Никаких фонограмм — только чистый драйв.</p>
+            </div>
+            <div class="card fade-up fade-up-delay-2" data-tilt>
+                <span class="card__icon">🌙</span>
+                <h3 class="card__title">Полный сет</h3>
+                <p class="card__desc">2,5 часа непрерывного выступления. Все главные треки и эксклюзивный материал.</p>
+            </div>
+            <div class="card fade-up fade-up-delay-3" data-tilt>
+                <span class="card__icon">🕯️</span>
+                <h3 class="card__title">Атмосфера</h3>
+                <p class="card__desc">Готическая сценография, неоновый свет, дым и ритуальная эстетика пространства.</p>
+            </div>
+            <div class="card fade-up fade-up-delay-4" data-tilt>
+                <span class="card__icon">💀</span>
+                <h3 class="card__title">Для своих</h3>
+                <p class="card__desc">Камерный зал только для преданных слушателей. Закрытое сообщество.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section tickets-section section--dark" id="tickets">
+        <h2 class="section__title fade-up">Билеты</h2>
+        <div class="tickets-info fade-up fade-up-delay-1">
+            <span class="tickets-info__price">от 1 500 ₽</span>
+            <span class="tickets-info__label">Стандартный билет</span>
+            <p class="tickets-info__note">VIP-места: 5 000 ₽<br>Ближние ряды: 3 000 ₽<br>Основной зал: 1 500 – 2 000 ₽</p>
+        </div>
+        <button class="btn--buy fade-up fade-up-delay-2" id="btnOpenModal">Выбрать места и купить</button>
+    </section>
+
+    <footer class="footer">
+        <p class="footer__text">See you in hell</p>
+        <p class="footer__copy">© 2026 Dark Moon Ritual. All rights reserved.</p>
+    </footer>
+
+    <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+        <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Выбор мест">
+            <button class="modal__close" id="btnCloseModal" aria-label="Закрыть">&times;</button>
+            <h2 class="modal__title">Выбор мест</h2>
+            <p class="modal__subtitle">Кликните по доступным местам для бронирования</p>
+            <div class="modal__stage">СЦЕНА</div>
+            <div class="modal__legend">
+                <span><span class="dot dot--available"></span> Доступно</span>
+                <span><span class="dot dot--vip"></span> VIP</span>
+                <span><span class="dot dot--occupied"></span> Занято</span>
+                <span><span class="dot dot--selected"></span> Выбрано</span>
+            </div>
+            <div class="seat-grid-container" id="seatGrid" aria-label="Схема зала"></div>
+            <div class="modal__summary">
+                <div class="modal__selected-info">
+                    <span id="selectedCount">Выбрано: <strong>0 мест</strong></span>
+                    <br>
+                    <span id="selectedSeatsList" style="color:var(--text-muted);font-size:0.75rem;"></span>
+                </div>
+                <div class="modal__total" id="totalPrice">
+                    0 ₽
+                    <small>Итого к оплате</small>
+                </div>
+            </div>
+            <button class="btn--confirm" id="btnConfirm" disabled>Подтвердить покупку</button>
+        </div>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+
+        // ---------- THREE.JS SCENE ----------
+        const canvas = document.getElementById('threeCanvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color('#050508');
+        scene.fog = new THREE.FogExp2('#050508', 0.00025);
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.5, 30);
+        camera.position.set(0, 0.3, 9);
+        camera.lookAt(0, 0, 0);
+
+        // Procedural moon texture
+        const texCanvas = document.createElement('canvas');
+        texCanvas.width = 512;
+        texCanvas.height = 256;
+        const ctx = texCanvas.getContext('2d');
+        const gradient = ctx.createRadialGradient(256, 100, 20, 256, 130, 260);
+        gradient.addColorStop(0, '#3a3a4a');
+        gradient.addColorStop(0.35, '#252535');
+        gradient.addColorStop(0.7, '#181825');
+        gradient.addColorStop(1, '#0d0d18');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 512, 256);
+        for (let i = 0; i < 3000; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 256;
+            const r = Math.random() * 4 + 0.5;
+            const alpha = Math.random() * 0.25;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fillStyle = Math.random() < 0.5 ? `rgba(0,0,0,${alpha})` : `rgba(180,180,200,${alpha * 0.6})`;
+            ctx.fill();
+        }
+        const rimGrad = ctx.createLinearGradient(380, 0, 512, 0);
+        rimGrad.addColorStop(0, 'rgba(255,46,136,0)');
+        rimGrad.addColorStop(0.6, 'rgba(255,46,136,0.08)');
+        rimGrad.addColorStop(1, 'rgba(255,46,136,0.18)');
+        ctx.fillStyle = rimGrad;
+        ctx.fillRect(380, 0, 132, 256);
+        const moonTexture = new THREE.CanvasTexture(texCanvas);
+        moonTexture.colorSpace = THREE.SRGBColorSpace;
+        moonTexture.wrapS = THREE.RepeatWrapping;
+        moonTexture.wrapU = THREE.RepeatWrapping;
+
+        const moonGeo = new THREE.SphereGeometry(2.4, 64, 48);
+        const moonMat = new THREE.MeshStandardMaterial({ map: moonTexture, roughness: 0.85, metalness: 0.05, color: new THREE.Color('#d0d0e0') });
+        const moon = new THREE.Mesh(moonGeo, moonMat);
+        moon.rotation.y = -0.4;
+        moon.rotation.x = 0.15;
+        scene.add(moon);
+
+        const ringGeo = new THREE.TorusGeometry(2.65, 0.06, 32, 160);
+        const ringMat = new THREE.MeshBasicMaterial({ color: '#ff2e88', transparent: true, opacity: 0.85 });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI * 0.55;
+        ring.rotation.y = 0.2;
+        scene.add(ring);
+
+        const outerRingGeo = new THREE.TorusGeometry(2.85, 0.025, 24, 140);
+        const outerRingMat = new THREE.MeshBasicMaterial({ color: '#ff6bb5', transparent: true, opacity: 0.45 });
+        const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
+        outerRing.rotation.x = Math.PI * 0.5;
+        outerRing.rotation.y = -0.3;
+        scene.add(outerRing);
+
+        const thinRingGeo = new THREE.TorusGeometry(3.05, 0.012, 20, 180);
+        const thinRingMat = new THREE.MeshBasicMaterial({ color: '#ff2e88', transparent: true, opacity: 0.3 });
+        const thinRing = new THREE.Mesh(thinRingGeo, thinRingMat);
+        thinRing.rotation.x = Math.PI * 0.6;
+        thinRing.rotation.y = 0.5;
+        scene.add(thinRing);
+
+        const particlesCount = 600;
+        const particlesGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(particlesCount * 3);
+        const sizes = new Float32Array(particlesCount);
+        const particleSpeeds = new Float32Array(particlesCount);
+        for (let i = 0; i < particlesCount; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.random() * Math.PI;
+            const radius = 2.2 + Math.random() * 5.5;
+            positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+            positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) - 1;
+            positions[i * 3 + 2] = radius * Math.cos(phi) - 1;
+            sizes[i] = Math.random() * 3.5 + 0.8;
+            particleSpeeds[i] = Math.random() * 0.003 + 0.0008;
+        }
+        particlesGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particlesGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        const particlesMat = new THREE.PointsMaterial({
+            color: '#ff6bb5', size: 0.025, blending: THREE.AdditiveBlending,
+            depthWrite: false, transparent: true, opacity: 0.65, sizeAttenuation: true
+        });
+        const particles = new THREE.Points(particlesGeo, particlesMat);
+        scene.add(particles);
+
+        const ambientLight = new THREE.AmbientLight('#1a1a2e', 1.8);
+        scene.add(ambientLight);
+        const pinkLight = new THREE.PointLight('#ff2e88', 18, 10, 1.5);
+        pinkLight.position.set(3, 1.5, 4);
+        scene.add(pinkLight);
+        const warmLight = new THREE.PointLight('#ff9966', 5, 8, 2);
+        warmLight.position.set(-3, -0.5, -2);
+        scene.add(warmLight);
+        const rimLight = new THREE.PointLight('#ff6bb5', 8, 6, 2);
+        rimLight.position.set(0, 3, -3);
+        scene.add(rimLight);
+
+        const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+        document.addEventListener('mousemove', (e) => {
+            mouse.targetX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                mouse.targetX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+                mouse.targetY = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+            }
+        }, { passive: true });
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = Math.min(clock.getDelta(), 0.1);
+            const time = performance.now() * 0.001;
+
+            mouse.x += (mouse.targetX - mouse.x) * 0.03;
+            mouse.y += (mouse.targetY - mouse.y) * 0.03;
+
+            moon.rotation.y += dt * 0.08;
+            ring.rotation.z += dt * 0.06;
+            outerRing.rotation.z -= dt * 0.04;
+            thinRing.rotation.z += dt * 0.07;
+            thinRing.rotation.x += dt * 0.02;
+
+            const parallaxX = mouse.x * 0.6;
+            const parallaxY = mouse.y * 0.35;
+            camera.position.x += (parallaxX - camera.position.x) * 0.02;
+            camera.position.y += (0.3 + parallaxY - camera.position.y) * 0.02;
+            camera.lookAt(0, -0.1, 0);
+
+            const posArray = particlesGeo.attributes.position.array;
+            for (let i = 0; i < particlesCount; i++) {
+                posArray[i * 3 + 1] += particleSpeeds[i];
+                if (posArray[i * 3 + 1] > 5) posArray[i * 3 + 1] = -4 - Math.random() * 3;
+                posArray[i * 3] += Math.sin(time * 0.7 + i) * 0.001;
+            }
+            particlesGeo.attributes.position.needsUpdate = true;
+
+            const pulse = 0.75 + Math.sin(time * 1.3) * 0.2;
+            ringMat.opacity = pulse;
+            outerRingMat.opacity = pulse * 0.5;
+            thinRingMat.opacity = pulse * 0.35;
+            pinkLight.intensity = 16 + Math.sin(time * 1.1) * 3;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // ---------- HEADER SCROLL ----------
+        const header = document.getElementById('header');
+        function updateHeader() {
+            if (window.scrollY > 60) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        }
+        window.addEventListener('scroll', updateHeader, { passive: true });
+        updateHeader();
+
+        // ---------- BURGER MENU ----------
+        const burger = document.getElementById('headerBurger');
+        const nav = document.getElementById('headerNav');
+        burger.addEventListener('click', () => {
+            burger.classList.toggle('active');
+            nav.classList.toggle('active');
+        });
+        nav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                burger.classList.remove('active');
+                nav.classList.remove('active');
+            });
+        });
+
+        // ---------- SMOOTH SCROLL ----------
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                const target = document.querySelector(targetId);
+                if (target) {
+                    e.preventDefault();
+                    const headerHeight = header.offsetHeight + 20;
+                    const pos = target.getBoundingClientRect().top + window.scrollY - headerHeight;
+                    window.scrollTo({ top: pos, behavior: 'smooth' });
+                }
+            });
+        });
+
+        document.getElementById('scrollIndicator').addEventListener('click', () => {
+            const about = document.getElementById('about');
+            if (about) {
+                const headerHeight = header.offsetHeight + 20;
+                const pos = about.getBoundingClientRect().top + window.scrollY - headerHeight;
+                window.scrollTo({ top: pos, behavior: 'smooth' });
+            }
+        });
+
+        // ---------- FADE-UP OBSERVER ----------
+        const fadeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    fadeObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('.fade-up').forEach(el => fadeObserver.observe(el));
+
+        // ---------- 3D TILT ----------
+        document.querySelectorAll('[data-tilt]').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -8;
+                const rotateY = ((x - centerX) / centerX) * 8;
+                card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+            });
+        });
+
+        // ---------- SEAT SELECTION ----------
+        const modalOverlay = document.getElementById('modalOverlay');
+        const btnOpenModal = document.getElementById('btnOpenModal');
+        const btnCloseModal = document.getElementById('btnCloseModal');
+        const btnConfirm = document.getElementById('btnConfirm');
+        const seatGrid = document.getElementById('seatGrid');
+        const selectedCountEl = document.getElementById('selectedCount');
+        const selectedSeatsListEl = document.getElementById('selectedSeatsList');
+        const totalPriceEl = document.getElementById('totalPrice');
+
+        const seatConfig = [
+            { label: 'VIP 1', count: 6, price: 5000, isVip: true },
+            { label: 'VIP 2', count: 8, price: 5000, isVip: true },
+            { label: 'Ряд 3', count: 10, price: 3000, isVip: false },
+            { label: 'Ряд 4', count: 12, price: 3000, isVip: false },
+            { label: 'Ряд 5', count: 14, price: 2000, isVip: false },
+            { label: 'Ряд 6', count: 14, price: 2000, isVip: false },
+            { label: 'Ряд 7', count: 16, price: 1500, isVip: false },
+            { label: 'Ряд 8', count: 16, price: 1500, isVip: false },
+        ];
+
+        const occupiedSeats = new Set();
+        function mulberry32(a) { return function() { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+        const rand = mulberry32(42);
+        seatConfig.forEach((row, ri) => {
+            for (let s = 0; s < row.count; s++) {
+                if (!row.isVip && rand() < 0.35) occupiedSeats.add(`${ri}-${s}`);
+                if (row.isVip && rand() < 0.2) occupiedSeats.add(`${ri}-${s}`);
+            }
+        });
+
+        const selectedSeats = new Set();
+
+        function getSeatId(ri, s) { return `${ri}-${s}`; }
+        function getSeatPrice(ri) { return seatConfig[ri].price; }
+        function getSeatLabel(ri, s) { return `${seatConfig[ri].label}, Место ${s+1}`; }
+        function calculateTotal() {
+            let total = 0;
+            selectedSeats.forEach(id => { const [ri] = id.split('-').map(Number); total += getSeatPrice(ri); });
+            return total;
+        }
+        function getWord(n) { return n === 1 ? 'место' : (n >= 2 && n <= 4 ? 'места' : 'мест'); }
+
+        function updateSummary() {
+            const count = selectedSeats.size;
+            selectedCountEl.innerHTML = `Выбрано: <strong>${count} ${getWord(count)}</strong>`;
+            if (count > 0) {
+                const labels = [];
+                selectedSeats.forEach(id => { const [ri, s] = id.split('-').map(Number); labels.push(getSeatLabel(ri, s)); });
+                selectedSeatsListEl.textContent = labels.join(' · ');
+            } else {
+                selectedSeatsListEl.textContent = '';
+            }
+            totalPriceEl.innerHTML = `${calculateTotal().toLocaleString('ru-RU')} ₽<small>Итого к оплате</small>`;
+            btnConfirm.disabled = count === 0;
+        }
+
+        function renderSeats() {
+            seatGrid.innerHTML = '';
+            seatConfig.forEach((row, ri) => {
+                const rowEl = document.createElement('div');
+                rowEl.classList.add('seat-row');
+                const labelEl = document.createElement('span');
+                labelEl.classList.add('seat-row__label');
+                labelEl.textContent = row.label;
+                rowEl.appendChild(labelEl);
+                for (let s = 0; s < row.count; s++) {
+                    const seatId = getSeatId(ri, s);
+                    const seatEl = document.createElement('button');
+                    seatEl.classList.add('seat');
+                    seatEl.type = 'button';
+                    seatEl.dataset.seatId = seatId;
+                    seatEl.textContent = s + 1;
+                    const tooltip = document.createElement('span');
+                    tooltip.classList.add('seat__tooltip');
+                    tooltip.textContent = getSeatLabel(ri, s);
+                    seatEl.appendChild(tooltip);
+
+                    if (occupiedSeats.has(seatId)) {
+                        seatEl.classList.add('seat--occupied');
+                        seatEl.disabled = true;
+                    } else if (row.isVip) {
+                        seatEl.classList.add('seat--vip');
+                    } else {
+                        seatEl.classList.add('seat--available');
+                    }
+                    if (selectedSeats.has(seatId)) seatEl.classList.add('seat--selected');
+                    seatEl.addEventListener('click', () => {
+                        if (occupiedSeats.has(seatId)) return;
+                        if (selectedSeats.has(seatId)) {
+                            selectedSeats.delete(seatId);
+                            seatEl.classList.remove('seat--selected');
+                        } else {
+                            selectedSeats.add(seatId);
+                            seatEl.classList.add('seat--selected');
+                        }
+                        updateSummary();
+                    });
+                    rowEl.appendChild(seatEl);
+                }
+                seatGrid.appendChild(rowEl);
+            });
+        }
+
+        function openModal() {
+            selectedSeats.clear();
+            renderSeats();
+            updateSummary();
+            modalOverlay.classList.add('active');
+            modalOverlay.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            modalOverlay.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        btnOpenModal.addEventListener('click', openModal);
+        document.querySelectorAll('.hero__cta[href="#tickets"]').forEach(cta => {
+            cta.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tickets = document.getElementById('tickets');
+                if (tickets) {
+                    const headerHeight = header.offsetHeight + 20;
+                    const pos = tickets.getBoundingClientRect().top + window.scrollY - headerHeight;
+                    window.scrollTo({ top: pos, behavior: 'smooth' });
+                    setTimeout(openModal, 600);
+                }
+            });
+        });
+        btnCloseModal.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal(); });
+
+        btnConfirm.addEventListener('click', () => {
+            if (selectedSeats.size === 0) return;
+            const total = calculateTotal();
+            const labels = [];
+            selectedSeats.forEach(id => { const [ri, s] = id.split('-').map(Number); labels.push(getSeatLabel(ri, s)); });
+            btnConfirm.textContent = 'Обработка...';
+            btnConfirm.disabled = true;
+            setTimeout(() => {
+                alert(`🎟️ Бронирование подтверждено!\n\nВыбранные места:\n${labels.join('\n')}\n\nСумма: ${total.toLocaleString('ru-RU')} ₽\n\nБилеты отправлены на вашу почту.`);
+                closeModal();
+                btnConfirm.textContent = 'Подтвердить покупку';
+                btnConfirm.disabled = false;
+                selectedSeats.clear();
+                renderSeats();
+                updateSummary();
+            }, 800);
+        });
+
+        renderSeats();
+        updateSummary();
+
+        console.log('%c🦇 Dark Moon Ritual %c— %cReady for the show %c🌙', 'color:#ff2e88;font-size:1.4em;', '', 'color:#ff6bb5;', 'color:#ffb347;');
+    </script>
+</body>
+</html>
